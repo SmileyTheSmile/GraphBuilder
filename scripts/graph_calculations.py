@@ -2,7 +2,10 @@ import pydot
 import pandas as pd
 
 from typing import Generator, List, Tuple
-from settings import *
+
+from scripts.settings import *
+
+from PIL import Image
 
 
 def generate_graph(rows: Generator, optimal_nodes: List) -> None:
@@ -69,9 +72,19 @@ def generate_graph(rows: Generator, optimal_nodes: List) -> None:
         cooler_graph.add_node(cooler_node)
         cooler_graph.add_edge(cooler_edge)
         
-    graph.write(f'{output_path}{graph_file_name}', format="png")
-    cooler_graph.write(f'{output_path}{cooler_graph_file_name}', format="png")
+    graph.write(path=f'{output_path}{graph_file_name}_raw', format="png")
+    cooler_graph.write(path=f'{output_path}{cooler_graph_file_name}_raw', format="png")
  
+ 
+def resize_graphs() -> None:
+    img = Image.open(f'{output_path}{graph_file_name}_raw')
+    img = img.resize((int(img.size[0] / 2), int(img.size[1] / 2)), Image.Resampling.LANCZOS)
+    img.save(f'{output_path}{graph_file_name}')
+    
+    img = Image.open(f'{output_path}{cooler_graph_file_name}_raw')
+    img = img.resize((int(img.size[0] / 2), int(img.size[1] / 2)), Image.Resampling.LANCZOS)
+    img.save(f'{output_path}{cooler_graph_file_name}')
+
    
 def get_optimal_path(input_file: str, required_year: str) -> Tuple:
     data = pd.read_excel(input_file)
@@ -102,3 +115,9 @@ def get_optimal_path(input_file: str, required_year: str) -> Tuple:
         parent = current_row[parent_label]
         
     return data.iterrows(), nodes_in_path
+
+
+if __name__ == "__main__":
+    generate_graph(*get_optimal_path(input_file, year))
+    resize_graphs()
+    

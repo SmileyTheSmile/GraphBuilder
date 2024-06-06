@@ -2,3 +2,5 @@ openpyxl
 pandas
 flet
 pydot
+matplotlib
+PyQt5==5.15.10

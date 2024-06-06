@@ -9,8 +9,8 @@ sum_label = 'Сумма'
 final_sum_label = "final_sum"
 
 # Настройки
-input_file = 'data.xlsx'
-output_path = ''
+input_file = 'assets/data.xlsx'
+output_path = 'assets/'
 graph_file_name = 'graph.png'
 cooler_graph_file_name = 'cooler_graph.png'
 year = 2021
