@@ -123,7 +123,7 @@ class UI(ft.Column):
 
 
     def generate_graph(self, e):
-        gc.generate_graph(*gc.get_optimal_path(settings.input_file, settings.year))
+        gc.generate_graphs(*gc.get_optimal_path(settings.input_file, settings.year))
         gc.resize_graphs()
         self.update()
 

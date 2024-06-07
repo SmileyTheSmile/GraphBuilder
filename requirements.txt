@@ -4,3 +4,5 @@ flet
 pydot
 matplotlib
 PyQt5==5.15.10
+sqlalchemy
+psycopg2-binary 
