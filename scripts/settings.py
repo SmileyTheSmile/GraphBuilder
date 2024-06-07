@@ -11,8 +11,10 @@ final_sum_row = "final_sum"
 # Настройки
 input_file = 'assets/data.xlsx'
 output_path = 'assets/'
-graph_file_name = 'graph'
-cooler_graph_file_name = 'cooler_graph'
+graph_file_name = 'graph.png'
+cooler_graph_file_name = 'cooler_graph.png'
+graph_raw_file_name = 'graph_raw.png'
+cooler_raw_graph_file_name = 'cooler_graph_raw.png'
 year = 2021
 
 # БД
