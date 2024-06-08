@@ -32,7 +32,6 @@ class TableTab(ft.Tab):
         )
         
         self.login_box = ft.Container(
-            alignment=ft.alignment.center,
             width=500,
             height=200,
             bgcolor=ft.colors.GREY_900,
@@ -40,7 +39,8 @@ class TableTab(ft.Tab):
             border_radius=ft.border_radius.all(10),
             border=ft.border.all(1, ft.colors.BLACK),
             content=ft.Column(
-                alignment=ft.MainAxisAlignment.SPACE_AROUND,
+                alignment=ft.MainAxisAlignment.SPACE_EVENLY,
+                horizontal_alignment=ft.CrossAxisAlignment.CENTER,
                 controls=[
                     self.login_field,
                     self.password_field,
@@ -50,50 +50,27 @@ class TableTab(ft.Tab):
             )
         )
         
-        self.table_view = ft.Container(
-            expand=1,
-            alignment=ft.alignment.center,
-            visible=False,
-            content=ft.DataTable(
-                expand=5,
+        self.data_table = ft.DataTable(
                 columns=[
                     ft.DataColumn(ft.Text("First name")),
                     ft.DataColumn(ft.Text("Last name")),
                     ft.DataColumn(ft.Text("Age"), numeric=True),
                 ],
-                rows=[
-                    ft.DataRow(
-                        cells=[
-                            ft.DataCell(ft.Text("John")),
-                            ft.DataCell(ft.Text("Smith")),
-                            ft.DataCell(ft.Text("43")),
-                        ],
-                    ),
-                    ft.DataRow(
-                        cells=[
-                            ft.DataCell(ft.Text("Jack")),
-                            ft.DataCell(ft.Text("Brown")),
-                            ft.DataCell(ft.Text("19")),
-                        ],
-                    ),
-                    ft.DataRow(
-                        cells=[
-                            ft.DataCell(ft.Text("Alice")),
-                            ft.DataCell(ft.Text("Wong")),
-                            ft.DataCell(ft.Text("25")),
-                        ],
-                    ),
-                ],
-            ), 
+            )
+        
+        self.table_view = ft.Container(
+            expand=True,
+            visible=False,
+            content=self.data_table,
         )
         
         self.content = ft.Column(
-            expand=1,
-            horizontal_alignment=ft.CrossAxisAlignment.STRETCH,
+            expand=True,
+            scroll=ft.ScrollMode.ALWAYS,
+            alignment=ft.MainAxisAlignment.SPACE_EVENLY,
             controls=[
                 ft.Row(
-                    expand=1,
-                    alignment=ft.MainAxisAlignment.SPACE_AROUND,
+                    alignment=ft.MainAxisAlignment.CENTER,
                     controls=[
                         self.login_box,
                         self.table_view,
@@ -121,6 +98,25 @@ class TableTab(ft.Tab):
         self.update()
         
         control.get_data_db()
+        
+        self.data_table.columns = [
+            ft.DataColumn(ft.Text(settings.id_label)),
+            ft.DataColumn(ft.Text(settings.id_parent_label)),
+            ft.DataColumn(ft.Text(settings.year_label)),
+            ft.DataColumn(ft.Text(settings.earnings_label)),
+        ]
+        
+        for _, row in control.data.iterrows():
+            self.data_table.rows.append(
+                ft.DataRow(
+                    cells=[
+                        ft.DataCell(ft.Text(int(row[settings.id_row]))),
+                        ft.DataCell(ft.Text(int(row[settings.id_parent_row]))),
+                        ft.DataCell(ft.Text(int(row[settings.year_row]))),
+                        ft.DataCell(ft.Text(int(row[settings.earnings_row]))),
+                    ],
+                ),
+            )
         
         self.progress_ring.visible = False
         self.table_view.visible = True
@@ -236,7 +232,7 @@ class UI(ft.Column):
         
         self.controls = [
             ft.Tabs(
-                selected_index=1,
+                selected_index=0,
                 animation_duration=300,
                 expand=1,
                 tabs=[

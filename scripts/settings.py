@@ -29,11 +29,11 @@ fill_color = 'green'
 edge_width = 5
 node_shape = "circle"
 
-parent_label = '№ родителя'
-node_num_label = '№ вершины'
+id_label = 'ID вершины'
+id_parent_label = 'ID родителя'
 probability_label = 'Вероятность'
 year_label = 'Год'
-sum_label = 'Сумма'
+earnings_label = 'Заработок'
 final_sum_label = "final_sum"
 
 # Строки
