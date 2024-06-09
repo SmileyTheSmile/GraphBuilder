@@ -15,6 +15,7 @@ class Control:
     def __init__(self):
         self.data = None
         self.engine = None
+        self.engine = None
         self.optimal_nodes = []
         
     def connect_to_db(
