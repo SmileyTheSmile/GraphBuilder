@@ -6,6 +6,9 @@ id_parent_row = 'id_parent'
 year_row = 'year'
 earnings_row = 'earnings'
 probability_row = 'probability'
+final_probability_row = 'final_probability'
+discount_sum_row = 'discount_sum'
+final_discount_sum_row = 'final_discount_sum'
 final_sum_row = "final_sum"
 
 # Настройки
@@ -31,10 +34,13 @@ node_shape = "circle"
 
 id_label = 'ID вершины'
 id_parent_label = 'ID родителя'
-probability_label = 'Вероятность'
 year_label = 'Год'
+probability_label = 'Вероятность'
 earnings_label = 'Заработок'
-final_sum_label = "final_sum"
+final_probability_label = 'Итоговая вероятность'
+discount_sum_label = 'Дисконтированная сумма'
+final_discount_sum_label = 'Итоговая дисконтированная сумма'
+final_sum_label = "Итоговая сумма"
 
 # Строки
 page_title = 'Расчёт оптимального пути'

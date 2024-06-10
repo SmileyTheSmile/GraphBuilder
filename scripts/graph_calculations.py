@@ -1,7 +1,6 @@
 import pydot
 import pandas as pd
 
-from typing import Generator, List, Tuple
 from sqlalchemy import create_engine
 from PIL import Image
 
@@ -36,11 +35,22 @@ class Control:
                 ''', 
             con=self.engine,
         )
+        self.set_data_types()
             
     def get_data_csv(self):
         self.data = pd.read_excel(set.input_file)
-        return self.data, self.get_optimal_path(set.data, )
             
+    def set_data_types(self):
+        self.data[set.id_row] = self.data[set.id_row].astype(int, errors='ignore').fillna('-')
+        self.data[set.id_parent_row] = self.data[set.id_parent_row].astype(int, errors='ignore').fillna('-')
+        self.data[set.year_row] = self.data[set.year_row].astype(int, errors='ignore').fillna('-')
+        self.data[set.earnings_row] = self.data[set.earnings_row].astype(float, errors='ignore').fillna('-')
+        self.data[set.probability_row] = self.data[set.probability_row].astype(float, errors='ignore').fillna('-')
+        self.data[set.final_probability_row] = self.data[set.final_probability_row].astype(float, errors='ignore').fillna('-')
+        self.data[set.discount_sum_row] = self.data[set.discount_sum_row].astype(float, errors='ignore').fillna('-')
+        self.data[set.final_discount_sum_row] = self.data[set.final_discount_sum_row].astype(float, errors='ignore').fillna('-')
+        self.data[set.final_sum_row] = self.data[set.final_sum_row].astype(float, errors='ignore').fillna('-')
+        
     def generate_graphs(self) -> None:
         rows = self.data.iterrows()
         
@@ -111,34 +121,34 @@ class Control:
         cooler_graph.write(path=f'{set.output_path}{set.cooler_raw_graph_file_name}', format="png")
     
     def get_optimal_path(self) -> bool:
-            grouped = self.data.groupby(set.year_row)
+        grouped = self.data.groupby(set.year_row)
 
-            data_by_year = {}
-            years = []
+        data_by_year = {}
+        years = []
 
-            for year, group in grouped:
-                years.append(year)
-                data_by_year[year] = group.reset_index(drop=True)
+        for year, group in grouped:
+            years.append(year)
+            data_by_year[year] = group.reset_index(drop=True)
+        
+        if set.year not in years:
+            print("Wrong year")
+            return False
+        
+        required_year_data = data_by_year[set.year]
+        max_final_sum_in_last_year = max(required_year_data[set.final_sum_row])
+        last_node_row = required_year_data[required_year_data[set.final_sum_row] == max_final_sum_in_last_year]
+        
+        nodes_in_path = [last_node_row[set.id_row].item()]
+        parent = last_node_row[set.id_parent_row]
+        
+        while not parent.isna().all():
+            current_row = self.data[self.data[set.id_row] == parent.item()]
+            nodes_in_path.append(current_row[set.id_row].item())
+            parent = current_row[set.id_parent_row]
             
-            if set.year not in years:
-                print("Wrong year")
-                return False
-            
-            required_year_data = data_by_year[set.year]
-            max_final_sum_in_last_year = max(required_year_data[set.final_sum_row])
-            last_node_row = required_year_data[required_year_data[set.final_sum_row] == max_final_sum_in_last_year]
-            
-            nodes_in_path = [last_node_row[set.id_row].item()]
-            parent = last_node_row[set.id_parent_row]
-            
-            while not parent.isna().all():
-                current_row = self.data[self.data[set.id_row] == parent.item()]
-                nodes_in_path.append(current_row[set.id_row].item())
-                parent = current_row[set.id_parent_row]
-                
-            self.optimal_nodes = nodes_in_path
-            
-            return True
+        self.optimal_nodes = nodes_in_path
+        
+        return True
 
     def resize_graphs() -> None:
         img = Image.open(f'{set.output_path}{set.graph_raw_file_name}')

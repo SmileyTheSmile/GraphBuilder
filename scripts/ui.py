@@ -47,7 +47,6 @@ class TableTab(ft.Column):
         
         self.progress_ring = ft.ProgressRing(
             tooltip="Подключаемся к PostgreSQL...",
-            visible=False,
         )
         
         self.db_connection = ft.Column(
@@ -62,7 +61,6 @@ class TableTab(ft.Column):
                         self.select_csv_button,
                     ]
                 ),
-                self.progress_ring,
             ]
         )
         
@@ -86,7 +84,6 @@ class TableTab(ft.Column):
                         self.select_db_button,
                     ]
                 ),
-                self.progress_ring,
             ]
         )
         
@@ -100,19 +97,22 @@ class TableTab(ft.Column):
             content=self.connection_selection,
         )
         
-        
         self.data_table = ft.DataTable(
             columns=[
                 ft.DataColumn(ft.Text(settings.id_label)),
                 ft.DataColumn(ft.Text(settings.id_parent_label)),
                 ft.DataColumn(ft.Text(settings.year_label)),
                 ft.DataColumn(ft.Text(settings.earnings_label)),
+                ft.DataColumn(ft.Text(settings.probability_label)),
+                ft.DataColumn(ft.Text(settings.final_probability_label)),
+                ft.DataColumn(ft.Text(settings.discount_sum_label)),
+                ft.DataColumn(ft.Text(settings.final_discount_sum_label)),
+                ft.DataColumn(ft.Text(settings.final_sum_label)),
             ],
         )
         
         self.table_view = ft.Container(
             expand=True,
-            visible=False,
             content=self.data_table,
         )
         
@@ -129,17 +129,19 @@ class TableTab(ft.Column):
         self.update()
         
     def connect_to_csv(self, e):
-        self.login_field.visible = False
-        self.password_field.visible = False
-        self.login_button.visible = False
-        self.progress_ring.visible = True
+        self.login_box.content = ft.Column(
+            alignment=ft.MainAxisAlignment.SPACE_EVENLY,
+            horizontal_alignment=ft.CrossAxisAlignment.CENTER,
+            controls=[
+                self.progress_ring
+            ]
+        )
         self.update()
         
+        control.get_data_csv()
+        self.update_data_table()
+        
     def connect_to_db(self, e):
-        # self.login_field.visible = False
-        # self.password_field.visible = False
-        # self.login_button.visible = False
-        self.progress_ring.visible = True
         self.login_box.content = ft.Column(
             alignment=ft.MainAxisAlignment.SPACE_EVENLY,
             horizontal_alignment=ft.CrossAxisAlignment.CENTER,
@@ -156,37 +158,39 @@ class TableTab(ft.Column):
             server=settings.server,
             port=settings.port,
         )
-        
-        self.progress_ring.tooltip = "Получаем данные..."
-        self.update()
-        
         control.get_data_db()
         
+        self.update_data_table()
+
+    def update_data_table(self):
+        self.data_table.rows = []
         for _, row in control.data.iterrows():
             self.data_table.rows.append(
                 ft.DataRow(
                     cells=[
-                        ft.DataCell(ft.Text(int(row[settings.id_row]))),
-                        ft.DataCell(ft.Text(int(row[settings.id_parent_row]))),
-                        ft.DataCell(ft.Text(int(row[settings.year_row]))),
-                        ft.DataCell(ft.Text(int(row[settings.earnings_row]))),
+                        ft.DataCell(ft.Text(row[settings.id_row])),
+                        ft.DataCell(ft.Text(row[settings.id_parent_row])),
+                        ft.DataCell(ft.Text(row[settings.year_row])),
+                        ft.DataCell(ft.Text(row[settings.earnings_row])),
+                        ft.DataCell(ft.Text(row[settings.probability_row])),
+                        ft.DataCell(ft.Text(row[settings.final_probability_row])),
+                        ft.DataCell(ft.Text(row[settings.discount_sum_row])),
+                        ft.DataCell(ft.Text(row[settings.final_discount_sum_row])),
+                        ft.DataCell(ft.Text(row[settings.final_sum_row])),
                     ],
                 ),
             )
         
-        # self.progress_ring.visible = False
-        # self.table_view.visible = True
-        # self.login_box.visible = False
-        print(control.data)
-        self.controls = [ft.Row(
-                alignment=ft.MainAxisAlignment.CENTER,
+        self.controls = [
+            ft.Row(
+                alignment=ft.MainAxisAlignment.SPACE_AROUND,
                 controls=[
                     self.table_view,
                 ],
-            )]
-        self.table_view.visible = True
+            )
+        ]
         self.update()
-
+        
         
 class GraphTab(ft.Tab):
     def __init__(self):
