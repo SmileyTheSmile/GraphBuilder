@@ -45,9 +45,7 @@ class TableTab(ft.Column):
             on_click=self.connect_to_db,
         )
         
-        self.progress_ring = ft.ProgressRing(
-            tooltip="Подключаемся к PostgreSQL...",
-        )
+        self.progress_ring = ft.ProgressRing()
         
         self.db_connection = ft.Column(
             alignment=ft.MainAxisAlignment.SPACE_EVENLY,
@@ -113,12 +111,52 @@ class TableTab(ft.Column):
         
         self.table_view = ft.Container(
             expand=True,
-            content=self.data_table,
+            content=ft.Column(
+                controls=[
+                    ft.Row(
+                        height=50,
+                        alignment=ft.MainAxisAlignment.SPACE_AROUND,
+                        controls=[
+                            ft.TextButton(
+                                expand=1,
+                                text="Обновить данные",
+                                on_click=self.update_data,
+                            ),
+                            ft.TextButton(
+                                expand=1,
+                                text="Подключиться заново",
+                                on_click=self.change_connection,
+                            ),
+                        ]
+                    ),
+                    ft.Row(
+                        alignment=ft.MainAxisAlignment.SPACE_AROUND,
+                        controls=[
+                            self.data_table,
+                        ]
+                    ),
+                ]
+            )
         )
         
         self.controls=[
             self.login_box,
         ]
+        
+    def update_data(self, e):
+        pass
+        
+    def change_connection(self, e):
+        self.login_box.content = self.connection_selection
+        self.controls = [
+            ft.Row(
+                alignment=ft.MainAxisAlignment.CENTER,
+                controls=[
+                    self.login_box,
+                ],
+            )
+        ]
+        self.update()
         
     def show_db_connection_screen(self, e):
         self.login_box.content = self.db_connection
@@ -198,14 +236,14 @@ class GraphTab(ft.Tab):
             text="График",
         )
         
-        self.graph_view = ft.Image(
+        self.graph_image = ft.Image(
             visible=False,
             src="graph.png",
             fit=ft.ImageFit.COVER,
             repeat=ft.ImageRepeat.NO_REPEAT,
             filter_quality=ft.FilterQuality.HIGH,
         )
-        self.cooler_graph_view = ft.Image(
+        self.cooler_graph_image = ft.Image(
             visible=False,
             src="cooler_graph.png",
             fit=ft.ImageFit.CONTAIN,
@@ -213,81 +251,80 @@ class GraphTab(ft.Tab):
             filter_quality=ft.FilterQuality.NONE
         )
         
-        self.progress_ring = ft.ProgressRing(
-            visible=True,
+        self.progress_ring = ft.ProgressRing()
+        
+        self.graph_view = ft.Row(
+            scroll=ft.ScrollMode.ALWAYS,
+            alignment=ft.MainAxisAlignment.START,
+            controls=[
+                self.progress_ring,
+                ft.Column(
+                    horizontal_alignment=ft.MainAxisAlignment.START,
+                    scroll=ft.ScrollMode.ALWAYS,
+                    controls=[
+                        self.graph_image,
+                        self.cooler_graph_image,
+                    ]
+                ),
+            ]
         )
         
         self.graph_display = ft.Container(
             visible=False,
             border_radius=ft.border_radius.all(10),
-            content=ft.Row(
-                scroll=ft.ScrollMode.ALWAYS,
-                alignment=ft.MainAxisAlignment.START,
-                controls=[
-                    self.progress_ring,
-                    ft.Column(
-                        horizontal_alignment=ft.MainAxisAlignment.START,
-                        scroll=ft.ScrollMode.ALWAYS,
-                        controls=[
-                            self.graph_view,
-                            self.cooler_graph_view,
-                        ]
-                    ),
-                ]
-            ),
-        )
-        
-        self.buttons_row = ft.Row(
-            controls=[
-                ft.ElevatedButton(
-                    expand=1,
-                    text="Сгенерировать график",
-                    on_click=self.generate_graph 
-                ),
-                ft.ElevatedButton(
-                    expand=1,
-                    text="Поменять график",
-                    on_click=self.change_shown_graph 
-                ),
-                ft.ElevatedButton(
-                    expand=1,
-                    text="Показать график",
-                    on_click=self.show_graph
-                ),
-            ]
+            border=ft.border.all(1, ft.colors.BLACK),
+            content=self.progress_ring,
         )
         
         self.content = ft.Column(
             expand=1,
             controls=[
-                self.buttons_row,
+                ft.Row(
+                    height=50,
+                    alignment=ft.MainAxisAlignment.SPACE_AROUND,
+                    controls=[
+                        ft.ElevatedButton(
+                            expand=1,
+                            text="Сгенерировать график",
+                            on_click=self.generate_graph 
+                        ),
+                        ft.ElevatedButton(
+                            expand=1,
+                            text="Поменять график",
+                            on_click=self.change_shown_graph 
+                        ),
+                        ft.ElevatedButton(
+                            expand=1,
+                            text="Показать график",
+                            on_click=self.show_graph
+                        ),
+                    ]
+                ),
                 self.graph_display,
             ],
         )
 
     def generate_graph(self, e):
         self.graph_display.visible = True
-        self.progress_ring.visible = True
-        self.graph_view.visible = False
         self.update()
         
-        gc.get_graphs()
+        control.get_graphs()
         
-        self.graph_view.visible = True
-        self.progress_ring.visible = False
+        self.graph_display.content = self.graph_view
+        self.graph_image.visible = True
         self.update()
 
     def change_shown_graph(self, e):
-        if self.graph_view.visible == True:
-            self.graph_view.visible = False
-            self.cooler_graph_view.visible = True
-        elif self.cooler_graph_view.visible == True:
-            self.graph_view.visible = True
-            self.cooler_graph_view.visible = False
+        if self.graph_image.visible == True:
+            self.graph_image.visible = False
+            self.cooler_graph_image.visible = True
+        elif self.cooler_graph_image.visible == True:
+            self.graph_image.visible = True
+            self.cooler_graph_image.visible = False
         self.update()
 
     def show_graph(self, e):
-        self.graph_view.visible = True
+        self.graph_image.visible = True
         self.update()
 
 

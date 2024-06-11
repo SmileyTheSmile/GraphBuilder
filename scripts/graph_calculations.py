@@ -35,6 +35,12 @@ class Control:
                 ''', 
             con=self.engine,
         )
+        
+        self.data[set.final_probability_row] = pd.Series()
+        self.data[set.discount_sum_row] = pd.Series()
+        self.data[set.final_discount_sum_row] = pd.Series()
+        self.data[set.final_sum_row] = pd.Series()
+        
         self.set_data_types()
             
     def get_data_csv(self):
