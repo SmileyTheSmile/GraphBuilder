@@ -43,25 +43,37 @@ class Control:
         self.data[set.final_sum_row] = pd.Series()
         
         self.set_data_types()
+        self.generate_values()
+        
         self.connection_type = 'db'
             
     def get_data_csv(self):
         self.data = pd.read_excel(set.input_file)
+        
+        self.data[set.final_probability_row] = pd.Series()
+        self.data[set.discount_sum_row] = pd.Series()
+        self.data[set.final_discount_sum_row] = pd.Series()
+        self.data[set.final_sum_row] = pd.Series()
+        
         self.set_data_types()
+        self.generate_values()
+        
         self.connection_type = 'csv'
             
     def set_data_types(self):
-        self.data[set.id_row] = self.data[set.id_row].astype(int, errors='ignore').fillna('-')
-        self.data[set.id_parent_row] = self.data[set.id_parent_row].astype(int, errors='ignore').fillna('-')
-        self.data[set.year_row] = self.data[set.year_row].astype(int, errors='ignore').fillna('-')
-        self.data[set.earnings_row] = self.data[set.earnings_row].astype(float, errors='ignore').fillna('-')
-        self.data[set.probability_row] = self.data[set.probability_row].astype(float, errors='ignore').fillna('-')
-        self.data[set.final_probability_row] = self.data[set.final_probability_row].astype(float, errors='ignore').fillna('-')
-        self.data[set.discount_sum_row] = self.data[set.discount_sum_row].astype(float, errors='ignore').fillna('-')
+        self.data[set.id_row] =                 self.data[set.id_row].astype(int, errors='ignore').fillna('-')
+        self.data[set.id_parent_row] =          self.data[set.id_parent_row].astype(int, errors='ignore').fillna('-')
+        self.data[set.year_row] =               self.data[set.year_row].astype(int, errors='ignore').fillna('-')
+        self.data[set.earnings_row] =           self.data[set.earnings_row].astype(float, errors='ignore').fillna('-')
+        self.data[set.probability_row] =        self.data[set.probability_row].astype(float, errors='ignore').fillna('-')
+        self.data[set.final_probability_row] =  self.data[set.final_probability_row].astype(float, errors='ignore').fillna('-')
+        self.data[set.discount_sum_row] =       self.data[set.discount_sum_row].astype(float, errors='ignore').fillna('-')
         self.data[set.final_discount_sum_row] = self.data[set.final_discount_sum_row].astype(float, errors='ignore').fillna('-')
-        self.data[set.final_sum_row] = self.data[set.final_sum_row].astype(float, errors='ignore').fillna('-')
+        self.data[set.final_sum_row] =          self.data[set.final_sum_row].astype(float, errors='ignore').fillna('-')
         
     def generate_graphs(self) -> None:
+        self.get_optimal_path()
+        
         rows = self.data.iterrows()
         
         graph = pydot.Dot(graph_type="graph", rankdir="BT")
@@ -153,6 +165,8 @@ class Control:
         
         while not parent.isna().all():
             current_row = self.data[self.data[set.id_row] == parent.item()]
+            if current_row.empty:
+                break
             nodes_in_path.append(current_row[set.id_row].item())
             parent = current_row[set.id_parent_row]
             
@@ -170,4 +184,24 @@ class Control:
         img.save(f'{set.output_path}{set.cooler_graph_file_name}')
 
     def generate_values(self):
-        pass
+        for index, row in self.data.iterrows():
+            id_parent = row[set.id_parent_row]
+            final_probility = row[set.probability_row]
+            discount_sum = row[set.earnings_row]
+            final_discount_sum = 0
+            
+            while id_parent is not None:
+                parent_row = self.data[self.data[set.id_row] == id_parent]
+                if parent_row.empty:
+                    id_parent = None
+                else:
+                    id_parent = parent_row[set.id_parent_row].item()
+                    final_probility *= parent_row[set.probability_row].item()
+                    discount_sum *= 0.85
+                    final_discount_sum += parent_row[set.final_discount_sum_row].item()
+            final_discount_sum += discount_sum
+            
+            self.data.at[index, set.final_probability_row] = round(final_probility, 6)
+            self.data.at[index, set.discount_sum_row] = round(discount_sum, 6)
+            self.data.at[index, set.final_discount_sum_row] = round(final_discount_sum, 6)
+            self.data.at[index, set.final_sum_row] = round(final_discount_sum * final_probility, 6)

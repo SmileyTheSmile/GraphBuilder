@@ -325,6 +325,7 @@ class GraphTab(ft.Column):
             return
         
         self.graph_display.visible = True
+        self.graph_display.content = self.progress_ring
         self.update()
         
         control.generate_graphs()
