@@ -15,6 +15,7 @@ class Control:
         self.data = None
         self.engine = None
         self.engine = None
+        self.connection_type = 'db'
         self.optimal_nodes = []
         
     def connect_to_db(
@@ -42,9 +43,12 @@ class Control:
         self.data[set.final_sum_row] = pd.Series()
         
         self.set_data_types()
+        self.connection_type = 'db'
             
     def get_data_csv(self):
         self.data = pd.read_excel(set.input_file)
+        self.set_data_types()
+        self.connection_type = 'csv'
             
     def set_data_types(self):
         self.data[set.id_row] = self.data[set.id_row].astype(int, errors='ignore').fillna('-')
@@ -156,7 +160,7 @@ class Control:
         
         return True
 
-    def resize_graphs() -> None:
+    def resize_graphs(self) -> None:
         img = Image.open(f'{set.output_path}{set.graph_raw_file_name}')
         img = img.resize((int(img.size[0] / 2), int(img.size[1] / 2)), Image.Resampling.LANCZOS)
         img.save(f'{set.output_path}{set.graph_file_name}')
@@ -165,3 +169,5 @@ class Control:
         img = img.resize((int(img.size[0] / 2), int(img.size[1] / 2)), Image.Resampling.LANCZOS)
         img.save(f'{set.output_path}{set.cooler_graph_file_name}')
 
+    def generate_values(self):
+        pass

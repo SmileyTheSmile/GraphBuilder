@@ -9,7 +9,7 @@ class TableTab(ft.Column):
     def __init__(self):
         super().__init__(
             scroll=ft.ScrollMode.ADAPTIVE,
-            horizontal_alignment=ft.CrossAxisAlignment.CENTER,
+            alignment=ft.MainAxisAlignment.SPACE_AROUND,
         )
         
         self.select_db_button = ft.TextButton(
@@ -68,7 +68,7 @@ class TableTab(ft.Column):
             value=settings.input_file,
         )
         self.connect_to_csv_button = ft.TextButton(
-            text="Подключиться",
+            text="Открыть файл",
             on_click=self.connect_to_csv,
         )
         self.csv_connection = ft.Column(
@@ -144,7 +144,22 @@ class TableTab(ft.Column):
         ]
         
     def update_data(self, e):
-        pass
+        self.controls = [
+            ft.Row(
+                alignment=ft.MainAxisAlignment.CENTER,
+                controls=[
+                    self.progress_ring,
+                ],
+            )
+        ]
+        self.update()
+        
+        if control.connection_type == 'db':
+            control.get_data_db()
+        else:
+            control.get_data_csv()
+            
+        self.update_data_table()
         
     def change_connection(self, e):
         self.login_box.content = self.connection_selection
@@ -230,11 +245,12 @@ class TableTab(ft.Column):
         self.update()
         
         
-class GraphTab(ft.Tab):
-    def __init__(self):
+class GraphTab(ft.Column):
+    def __init__(self, page):
         super().__init__(
-            text="График",
+            alignment=ft.MainAxisAlignment.START,
         )
+        self.page = page
         
         self.graph_image = ft.Image(
             visible=False,
@@ -257,7 +273,6 @@ class GraphTab(ft.Tab):
             scroll=ft.ScrollMode.ALWAYS,
             alignment=ft.MainAxisAlignment.START,
             controls=[
-                self.progress_ring,
                 ft.Column(
                     horizontal_alignment=ft.MainAxisAlignment.START,
                     scroll=ft.ScrollMode.ALWAYS,
@@ -272,49 +287,65 @@ class GraphTab(ft.Tab):
         self.graph_display = ft.Container(
             visible=False,
             border_radius=ft.border_radius.all(10),
-            border=ft.border.all(1, ft.colors.BLACK),
+            border=ft.border.all(2, ft.colors.GREY),
+            alignment=ft.alignment.center,
             content=self.progress_ring,
         )
         
-        self.content = ft.Column(
-            expand=1,
-            controls=[
-                ft.Row(
-                    height=50,
-                    alignment=ft.MainAxisAlignment.SPACE_AROUND,
-                    controls=[
-                        ft.ElevatedButton(
-                            expand=1,
-                            text="Сгенерировать график",
-                            on_click=self.generate_graph 
-                        ),
-                        ft.ElevatedButton(
-                            expand=1,
-                            text="Поменять график",
-                            on_click=self.change_shown_graph 
-                        ),
-                        ft.ElevatedButton(
-                            expand=1,
-                            text="Показать график",
-                            on_click=self.show_graph
-                        ),
-                    ]
-                ),
-                self.graph_display,
-            ],
-        )
+        self.controls = [ 
+            ft.Row(
+                height=50,
+                alignment=ft.MainAxisAlignment.SPACE_AROUND,
+                controls=[
+                    ft.ElevatedButton(
+                        expand=1,
+                        text="Сгенерировать график",
+                        on_click=self.generate_graph 
+                    ),
+                    ft.ElevatedButton(
+                        expand=1,
+                        text="Поменять график",
+                        on_click=self.change_shown_graph 
+                    ),
+                ]
+            ),
+            self.graph_display,
+        ]
 
     def generate_graph(self, e):
+        if control.data is None:
+            self.page.snack_bar = ft.SnackBar(
+                bgcolor=ft.colors.RED_300,
+                
+                content=ft.Text("Не загружены данные."),
+                action="Ок",
+                open=True,
+            )
+            self.page.update()
+            return
+        
         self.graph_display.visible = True
         self.update()
         
-        control.get_graphs()
+        control.generate_graphs()
+        control.resize_graphs()
         
         self.graph_display.content = self.graph_view
         self.graph_image.visible = True
         self.update()
 
     def change_shown_graph(self, e):
+        if control.data is None:
+            self.page.snack_bar = ft.SnackBar(
+                bgcolor=ft.colors.RED_300,
+                
+                content=ft.Text("Не загружены данные."),
+                action="Ок",
+                open=True,
+            )
+            self.page.update()
+            return
+        
         if self.graph_image.visible == True:
             self.graph_image.visible = False
             self.cooler_graph_image.visible = True
@@ -323,16 +354,13 @@ class GraphTab(ft.Tab):
             self.cooler_graph_image.visible = False
         self.update()
 
-    def show_graph(self, e):
-        self.graph_image.visible = True
-        self.update()
-
 
 class UI(ft.Column):
-    def __init__(self):
+    def __init__(self, page):
         super().__init__(
             expand=True,
         )
+        self.page = page
         
         self.controls = [
             ft.Tabs(
@@ -342,9 +370,21 @@ class UI(ft.Column):
                 tabs=[
                     ft.Tab(
                         text="Таблица",
-                        content=TableTab(),
+                        content=ft.Container(
+                            alignment=ft.alignment.center,
+                            expand=1,
+                            content=TableTab()
+                        ),
                     ),
-                    GraphTab(),
+                    ft.Tab(
+                        text="График",
+                        content=ft.Container(
+                            alignment=ft.alignment.center,
+                            expand=1,
+                            content=GraphTab(page),
+                        ),
+                    ),
+                    
                 ],
             )
         ]
@@ -356,5 +396,6 @@ def main_page(page: ft.Page):
     page.window_min_width = 1200
     page.window_min_height = 600
     page.expand = True
-    page.add(UI())
+    page.window_maximized = True
+    page.add(UI(page))
    
