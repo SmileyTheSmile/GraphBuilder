@@ -398,5 +398,6 @@ def main_page(page: ft.Page):
     page.window_min_height = 600
     page.expand = True
     page.window_maximized = True
+    page.theme_mode = "dark"
     page.add(UI(page))
    
